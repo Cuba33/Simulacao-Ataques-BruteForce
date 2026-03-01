@@ -1,7 +1,7 @@
 🔐 Projeto Prático: Simulação de Ataques de Força Bruta com Kali Linux e Medusa
 📌 Objetivo do Projeto
 
-Implementar, documentar e compartilhar um projeto prático utilizando o Kali Linux e a ferramenta Medusa, em conjunto com ambientes vulneráveis como Metasploitable 2 e DVWA (Damn Vulnerable Web Application), com o objetivo de simular cenários reais de ataque de força bruta e aplicar medidas de prevenção.
+Implementar, documentar e compartilhar um projeto prático utilizando o Kali Linux e a ferramenta Medusa, em conjunto com ambientes vulneráveis como Metasploitable 2 e DVWA (Damn Vulnerable Web Application), com o objetivo de simular cenários reais de ataque de força bruta e exercitar medidas de prevenção.
 
 Este projeto tem fins exclusivamente educacionais e visa desenvolver competências em:
 
@@ -11,13 +11,13 @@ Este projeto tem fins exclusivamente educacionais e visa desenvolver competênci
 
 🔐 Password Spraying
 
-🌐 Análise de vulnerabilidades web
+🌐 Testes em aplicações web vulneráveis
 
-🛡️ Implementação de medidas defensivas
+🛡️ Implementação de medidas de mitigação
 
 🖥️ Ambiente de Laboratório
 
-O laboratório foi configurado em ambiente virtual isolado para garantir segurança durante os testes.
+O ambiente foi configurado em rede isolada para garantir segurança durante os testes.
 
 Hypervisor: VirtualBox
 
@@ -27,16 +27,18 @@ Máquina Alvo: Metasploitable 2
 
 Aplicação Web Vulnerável: DVWA
 
-Tipo de Rede: Host-Only (ambiente isolado)
+Tipo de Rede: Host-Only
 
 🔎 1️⃣ Enumeração Inicial com Nmap
 
-A fase de reconhecimento é fundamental para identificar portas abertas e serviços ativos.
+A fase de reconhecimento é essencial para identificar portas abertas e serviços ativos no alvo.
 
-Comando utilizado:
+A opção -sV foi utilizada para identificar as versões dos serviços em execução, permitindo análise mais precisa de possíveis vulnerabilidades.
+
+🔧 Comando utilizado:
 sudo nmap -sV 192.168.56.102
-Principais Serviços Identificados:
-Porta	Serviço	Versão	Risco
+📊 Principais Serviços Identificados
+Porta	Serviço	Versão	Nível de Risco
 21	FTP	vsftpd 2.3.4	Crítico
 23	Telnet	Linux telnetd	Crítico
 80	HTTP	Apache 2.2.8	Médio
@@ -46,65 +48,149 @@ Porta	Serviço	Versão	Risco
 
 Foi utilizado o Medusa para realizar um ataque de dicionário contra o serviço FTP.
 
-Comando:
+🔧 Comando:
 medusa -h 192.168.56.102 -U users.txt -P passwords.txt -M ftp
-Resultado:
+✅ Resultado
 
-Usuário: msfadmin
+Usuário encontrado: msfadmin
 
-Senha: msfadmin
+Senha encontrada: msfadmin
 
 Status: SUCCESS
 
-Análise:
+🔎 Análise Técnica
 
-O ataque foi bem-sucedido devido à ausência de bloqueio de conta e uso de credenciais padrão. Isso demonstra a importância do hardening básico em servidores.
+O ataque foi bem-sucedido devido à:
+
+Ausência de bloqueio de conta após múltiplas tentativas
+
+Uso de credenciais padrão
+
+Falta de política de senha forte
+
+Esse cenário demonstra a importância do hardening básico em servidores e da aplicação de políticas adequadas de autenticação.
 
 💻 3️⃣ Password Spraying – SMB
 
-Técnica utilizada para testar uma única senha contra múltiplos usuários, reduzindo risco de bloqueio.
+Foi aplicada a técnica de Password Spraying, testando uma única senha contra múltiplos usuários para evitar bloqueios automáticos.
 
-Comando:
+🔧 Comando:
 medusa -h 192.168.56.102 -U users.txt -p msfadmin -M smbnt
+🔎 Análise
 
-Foi identificado reaproveitamento de credenciais em múltiplos serviços, facilitando possível movimentação lateral.
+O teste confirmou reutilização de credenciais entre serviços.
 
-🌐 4️⃣ Teste em Aplicação Web – DVWA
+Esse cenário evidencia risco de credential reuse, prática comum em ambientes corporativos e frequentemente explorada em ataques reais. Em um ambiente produtivo, isso poderia facilitar:
 
-A aplicação DVWA foi utilizada para simular ataques automatizados em formulários de login.
+Movimentação lateral
+
+Escalada de privilégios
+
+Comprometimento de múltiplos sistemas
+
+🌐 4️⃣ Testes em Aplicação Web – DVWA
+
+Foi utilizado o DVWA (Damn Vulnerable Web Application) para simular ataques automatizados em formulários de login.
 
 URL: http://192.168.56.102/dvwa
 
-Cenário: Teste de vulnerabilidade em autenticação sem limitação de tentativas.
+Cenário: Autenticação sem limitação de tentativas
 
-🛡️ Medidas de Prevenção Recomendadas
+Objetivo: Demonstrar vulnerabilidade à automação de login
+
+O teste demonstra como aplicações web mal configuradas podem ser facilmente exploradas por ferramentas automatizadas.
+
+📸 Evidências dos Testes
+🔎 Enumeração com Nmap
+
+01-nmap-network-discovery.png
+
+02-nmap-target-exclusion.png
+
+03-nmap-target-services-discovery.png
+
+⚔️ Ataque de Força Bruta – FTP
+
+04-setup-and-bruteforce-start.png
+
+05-medusa-ftp-success.png
+
+💻 Password Spraying – SMB
+
+06-medusa-smb-spraying-start.png
+
+07-medusa-smb-success.png
+
+🌐 DVWA – Configuração de Segurança
+
+08-dvwa-security-level-config.png
+
+🛡️ Medidas de Mitigação Recomendadas
 
 Com base nos testes realizados, recomenda-se:
 
 ✅ Implementação de políticas de senha forte
 
-✅ Bloqueio de conta após múltiplas tentativas
+✅ Bloqueio de conta após múltiplas tentativas falhas
 
 ✅ Uso de MFA (Autenticação Multifator)
 
 ✅ Implementação de Fail2Ban
 
-✅ Substituição de FTP e Telnet por SFTP e SSH
+✅ Substituição de FTP e Telnet por protocolos seguros (SFTP e SSH)
 
 ✅ Monitoramento contínuo de logs
 
-📊 Lições Aprendidas
+✅ Auditorias periódicas de segurança
 
-A enumeração direciona ataques de forma estratégica.
+🔍 Impacto em um Ambiente Real
 
-Credenciais padrão representam alto risco.
+Se exploradas em um ambiente corporativo real, essas vulnerabilidades poderiam resultar em:
 
-Controles básicos poderiam mitigar a maioria dos ataques simulados.
+Acesso não autorizado a dados sensíveis
 
-A reutilização de senhas aumenta o impacto de invasões.
+Escalada de privilégios
+
+Movimentação lateral na rede
+
+Comprometimento completo da infraestrutura
+
+📂 Estrutura do Repositório
+📁 images
+ ├── 01-nmap-network-discovery.png
+ ├── 02-nmap-target-exclusion.png
+ ├── 03-nmap-target-services-discovery.png
+ ├── 04-setup-and-bruteforce-start.png
+ ├── 05-medusa-ftp-success.png
+ ├── 06-medusa-smb-spraying-start.png
+ ├── 07-medusa-smb-success.png
+ └── 08-dvwa-security-level-config.png
+
+users.txt
+passwords.txt
+README.md
+🚀 Competências Demonstradas
+
+Pentest básico em ambiente controlado
+
+Enumeração de serviços com Nmap
+
+Exploração com Medusa
+
+Identificação de vulnerabilidades
+
+Análise de risco
+
+Proposição de medidas de mitigação
+
+Documentação técnica estruturada
+
+Uso do GitHub como portfólio técnico
 
 📚 Conclusão
 
-Este projeto permitiu compreender, na prática, como ataques de força bruta são executados e como podem ser prevenidos. A experiência reforça a importância da segurança proativa e do monitoramento constante em ambientes corporativos.
+Este projeto permitiu compreender, na prática, como ataques de força bruta podem ser executados e como podem ser mitigados por meio de boas práticas de segurança.
 
-⚠️ Aviso: Todos os testes foram realizados em ambiente controlado e isolado, exclusivamente para fins educacionais.
+A experiência reforça a importância da segurança proativa, do monitoramento contínuo e da aplicação de controles adequados para proteger ambientes corporativos.
+
+⚠️ Aviso: Todos os testes foram realizados em ambiente isolado e controlado, exclusivamente para fins educacionais.
