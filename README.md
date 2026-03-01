@@ -1,131 +1,110 @@
-# 🔐 Brute Force Attack Lab – Kali Linux & Medusa
+🔐 Projeto Prático: Simulação de Ataques de Força Bruta com Kali Linux e Medusa
+📌 Objetivo do Projeto
 
-## 📌 Sobre o Projeto
+Implementar, documentar e compartilhar um projeto prático utilizando o Kali Linux e a ferramenta Medusa, em conjunto com ambientes vulneráveis como Metasploitable 2 e DVWA (Damn Vulnerable Web Application), com o objetivo de simular cenários reais de ataque de força bruta e aplicar medidas de prevenção.
 
-Este projeto documenta a simulação de ataques de força bruta em ambiente controlado utilizando Kali Linux contra a máquina vulnerável Metasploitable 2.
+Este projeto tem fins exclusivamente educacionais e visa desenvolver competências em:
 
-O objetivo é demonstrar conhecimentos em:
+🔎 Enumeração de serviços
 
-- Enumeração de serviços
-- Ataques de força bruta
-- Password spraying
-- Validação de credenciais
-- Análise de vulnerabilidades
-- Proposição de medidas de mitigação
+⚔️ Ataques de força bruta
 
----
+🔐 Password Spraying
 
-## 🖥️ Ambiente de Laboratório
+🌐 Análise de vulnerabilidades web
 
-- VirtualBox
-- Kali Linux (Máquina Atacante)
-- Metasploitable 2 (Máquina Alvo)
-- Rede Host-Only (Ambiente isolado)
+🛡️ Implementação de medidas defensivas
 
----
+🖥️ Ambiente de Laboratório
 
-## 🔎 1️⃣ Enumeração Inicial
+O laboratório foi configurado em ambiente virtual isolado para garantir segurança durante os testes.
 
-Ferramenta utilizada: Nmap
+Hypervisor: VirtualBox
 
-Comando executado:
+Máquina Atacante: Kali Linux
 
-nmap -sV 192.168.56.102
+Máquina Alvo: Metasploitable 2
 
-### Serviços Identificados
+Aplicação Web Vulnerável: DVWA
 
-| Porta | Serviço | Versão | Risco |
-|-------|---------|--------|-------|
-| 21 | FTP | vsftpd 2.3.4 | Alto |
-| 23 | Telnet | Linux telnetd | Alto |
-| 80 | HTTP | Apache 2.2.8 | Médio |
-| 139/445 | SMB | Samba 3.x | Alto |
-| 3306 | MySQL | 5.0.51a | Médio |
+Tipo de Rede: Host-Only (ambiente isolado)
 
-A enumeração revelou múltiplos serviços legados e vulneráveis, aumentando significativamente a superfície de ataque.
+🔎 1️⃣ Enumeração Inicial com Nmap
 
----
+A fase de reconhecimento é fundamental para identificar portas abertas e serviços ativos.
 
-# ⚔️ 2️⃣ Ataque de Força Bruta – FTP
+Comando utilizado:
+sudo nmap -sV 192.168.56.102
+Principais Serviços Identificados:
+Porta	Serviço	Versão	Risco
+21	FTP	vsftpd 2.3.4	Crítico
+23	Telnet	Linux telnetd	Crítico
+80	HTTP	Apache 2.2.8	Médio
+445	SMB	Samba 3.x	Alto
+3306	MySQL	5.0.51a	Médio
+⚔️ 2️⃣ Ataque de Força Bruta – FTP
 
-Ferramenta: Medusa
+Foi utilizado o Medusa para realizar um ataque de dicionário contra o serviço FTP.
 
 Comando:
-
 medusa -h 192.168.56.102 -U users.txt -P passwords.txt -M ftp
+Resultado:
 
-### 🎯 Resultado
+Usuário: msfadmin
 
-Credenciais encontradas com sucesso:
+Senha: msfadmin
 
-Usuário: msfadmin  
-Senha: msfadmin  
+Status: SUCCESS
 
-Validação realizada manualmente via login FTP.
+Análise:
 
-### 🔎 Análise
+O ataque foi bem-sucedido devido à ausência de bloqueio de conta e uso de credenciais padrão. Isso demonstra a importância do hardening básico em servidores.
 
-- Não há limitação de tentativas de login
-- Não existe política de senha forte
-- Serviço FTP transmite credenciais em texto plano
+💻 3️⃣ Password Spraying – SMB
 
-Impacto: Alto
-
----
-
-# 💻 3️⃣ Password Spraying – SMB
-
-Após enumeração de usuários via enum4linux, foi realizado teste de password spraying.
+Técnica utilizada para testar uma única senha contra múltiplos usuários, reduzindo risco de bloqueio.
 
 Comando:
+medusa -h 192.168.56.102 -U users.txt -p msfadmin -M smbnt
 
-medusa -h 192.168.56.102 -U users.txt -p password -M smbnt
+Foi identificado reaproveitamento de credenciais em múltiplos serviços, facilitando possível movimentação lateral.
 
-Objetivo: testar uma única senha comum contra múltiplos usuários.
+🌐 4️⃣ Teste em Aplicação Web – DVWA
 
-Esse tipo de ataque é eficiente contra ambientes corporativos com políticas fracas de senha.
+A aplicação DVWA foi utilizada para simular ataques automatizados em formulários de login.
 
----
+URL: http://192.168.56.102/dvwa
 
-# 🌐 4️⃣ Força Bruta em Aplicação Web (DVWA)
+Cenário: Teste de vulnerabilidade em autenticação sem limitação de tentativas.
 
-A aplicação DVWA foi acessada via:
+🛡️ Medidas de Prevenção Recomendadas
 
-http://192.168.56.102/dvwa
+Com base nos testes realizados, recomenda-se:
 
-Configuração de segurança: LOW
+✅ Implementação de políticas de senha forte
 
-Foi testado o módulo de Brute Force para simular automação de tentativas de login.
+✅ Bloqueio de conta após múltiplas tentativas
 
----
+✅ Uso de MFA (Autenticação Multifator)
 
-# 🛡️ Medidas de Mitigação Recomendadas
+✅ Implementação de Fail2Ban
 
-- Implementação de política de senha forte
-- Bloqueio de conta após múltiplas tentativas falhas
-- Implementação de autenticação multifator (MFA)
-- Monitoramento e análise de logs
-- Implementação de Fail2Ban
-- Desativação de serviços legados (Telnet, FTP)
-- Atualização de versões vulneráveis de serviços
+✅ Substituição de FTP e Telnet por SFTP e SSH
 
----
+✅ Monitoramento contínuo de logs
 
-# 📊 Lições Aprendidas
+📊 Lições Aprendidas
 
-- A enumeração é etapa crítica antes de qualquer exploração.
-- Serviços legados representam alto risco.
-- Senhas fracas continuam sendo uma das principais vulnerabilidades.
-- Controles de segurança básicos poderiam impedir o ataque.
+A enumeração direciona ataques de forma estratégica.
 
----
+Credenciais padrão representam alto risco.
 
-# 📚 Conclusão
+Controles básicos poderiam mitigar a maioria dos ataques simulados.
 
-Este laboratório permitiu compreender na prática como ataques automatizados de força bruta funcionam e como ambientes mal configurados podem ser comprometidos rapidamente.
+A reutilização de senhas aumenta o impacto de invasões.
 
-O projeto reforça a importância de controles preventivos, monitoramento e boas práticas de segurança da informação.
+📚 Conclusão
 
----
+Este projeto permitiu compreender, na prática, como ataques de força bruta são executados e como podem ser prevenidos. A experiência reforça a importância da segurança proativa e do monitoramento constante em ambientes corporativos.
 
-⚠️ Todos os testes foram realizados em ambiente isolado e controlado para fins exclusivamente educacionais.
+⚠️ Aviso: Todos os testes foram realizados em ambiente controlado e isolado, exclusivamente para fins educacionais.
